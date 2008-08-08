@@ -1,0 +1,4 @@
+#! /bin/bash
+source "$(dirname "$0")/../lib/mae-lib-general.sh" || { echo "fatal error: cannot load magic ecabu library"; exit 13; }
+echo "done"
+
