@@ -8,3 +8,5 @@ test -z "$MAE_DIR" &&
 test -d "$MAE_DIR" ||
   die "\$MAE_DIR points to a non-existent directory $MAE_DIR"
 echo "using local repository at $MAE_DIR"
+
+packs_dir="$MAE_DIR/packs"

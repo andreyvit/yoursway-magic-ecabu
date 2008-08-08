@@ -36,16 +36,24 @@ public class PackWriter {
     
     public static void main(String[] args) {
         try {
-            proceed();
+            File packDir = new File(".");
+            if (args.length >= 2 && "-d".equals(args[0])) {
+                packDir = new File(args[1]);
+                if (!packDir.isDirectory()) {
+                    System.err.println("-d refers to an invalid directory: " + packDir.getPath());
+                    throw new Exit(5);
+                }
+            }
+            proceed(packDir);
         } catch (Exit exit) {
             exit.proceed();
         }
     }
     
-    private static void proceed() {
+    private static void proceed(File packDir) {
         File packTempFile;
         try {
-            packTempFile = File.createTempFile("pack", ".zip", new File("."));
+            packTempFile = File.createTempFile("pack", ".zip", packDir);
         } catch (IOException e) {
             System.err.println("pack writer: cannot create a temporary file");
             throw new Exit(1);
