@@ -1,0 +1,13 @@
+#! /bin/bash
+cd "$(dirname "$0")"
+basedir="$(pwd)"
+
+dir="$(mktemp -d -t buildXXXXX)"
+javac -d "$dir" $(find "$basedir/src/java" -type f -name '*.java') ||
+  { echo "javac failed."; rm -rf "$dir"; exit 1; }
+cd "$dir"
+jar cmf "$basedir/src/writer-manifest.mf" "$basedir/lib/java/packwriter.jar" $(find . -type f -name '*.class') ||
+  { echo "jar failed."; rm -rf "$dir"; exit 1; }
+  
+cd "$basedir"
+rm -rf $dir
