@@ -2,12 +2,14 @@
 cd "$(dirname "$0")"
 basedir="$(pwd)"
 
-dir="$(mktemp -d -t buildXXXXX)"
-javac -d "$dir" $(find "$basedir/src/java" -type f -name '*.java') ||
-  { echo "javac failed."; rm -rf "$dir"; exit 1; }
-cd "$dir"
-jar cmf "$basedir/src/writer-manifest.mf" "$basedir/lib/java/packwriter.jar" $(find . -type f -name '*.class') ||
-  { echo "jar failed."; rm -rf "$dir"; exit 1; }
+for prog in packwriter; do
+  dir="$(mktemp -d -t buildXXXXX)"
+  javac -d "$dir" $(find "$basedir/src/java/$prog" -type f -name '*.java') ||
+    { echo "$prog: javac failed."; rm -rf "$dir"; exit 1; }
+  cd "$dir"
+  jar cmf "$basedir/src/$prog-manifest.mf" "$basedir/lib/java/$prog.jar" $(find . -type f -name '*.class') ||
+    { echo "$prog: jar failed."; rm -rf "$dir"; exit 1; }
+done
   
 cd "$basedir"
 rm -rf $dir
