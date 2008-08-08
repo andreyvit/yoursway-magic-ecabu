@@ -1,0 +1,74 @@
+
+Scope: Build system, Release process, Updater, Pingback.
+
+When a user is checking for updates the first time, a unique tag is assigned to the IDE instance.
+Pingback sends crash/bug reports. A "case" in opened for each one.
+Developers review the cases and link them to the issues.
+When an update is released, a check is made to see if your cases have been closed, or are in the process of being fixed.
+
+Updater: plugins and applications.
+
+Component
+
+Bundled Rails
+
+
+The full support of the following languages is installed separately:
+[x] Ruby
+[x] Python
+[x] Pylons
+
+yourswayide/components-discovery.txt
+	ruby	1030000	Ruby	
+
+components/versions.zip
+	componentName <upperBoundOnVersion s/stableVersion/stableDate n/nightlyVersion/nightlyDate
+	ruby <1.0.1000 s/1.0.1000/2008-03-15 n/1.1.0005/2008-05-17
+	ruby * s/1.0.1000/2008-03-15 n/1.1.0005/2008-05-17
+
+components/ruby/1.0.1000/map.zip
+	P 09d2af8dd22201dd8d48e5dcfcaed281ff9422c7
+	P e5fa44f2b31c1fb553b6021e7360d07d5d91ff5e
+	P 7448d8798a4380162d4b56f9b452e2f6f9e24e7a
+	P a3db5c13ff90a36963278c6a39e4ee3c22e2a436
+	D $APP
+	DI $APP/configuration
+	DP $APP/test/boz
+	F 9c6b057a2b9d96a4067a749ee3b3b0158d390cf1 . test_foo.jar
+	F 5d9474c0309b7ca09a182d888f73b37a8fe1362c . boobooboo.jar
+	F 030514d80869744a4e2f60d2fd37d6081f5ed01a E something.biz
+	D $APP/test/boz/bar
+	FI *.log
+
+P	pack
+D	directory
+DP	partial directory (only mentioned files are acted upon)
+DI	ignore directory (inside D to not remove a specific dir)
+F	file
+FI	ignore file
+R	remove file or directory (inside a partial directory)
+
+packs/e5fa44f2b31c1fb553b6021e7360d07d5d91ff5e.zip
+	9c6b057a2b9d96a4067a749ee3b3b0158d390cf1
+	030514d80869744a4e2f60d2fd37d6081f5ed01a
+	5d9474c0309b7ca09a182d888f73b37a8fe1362c
+	...
+
+export MAE_REPOS=<folder>
+export MAE_REMOTE_REPOS=http://.../.../
+mae-list maps
+	lists the files in the specified folder
+mae-download maps/030514d80869744a4e2f60d2fd37d6081f5ed01a
+	downloads the specified file(s) from a remote MAE repository 
+mae-upload
+	uploads the specified file(s) to a remote MAE repository
+mae-create-pack <folder> <folder>...
+	creates a pack from the files of a specified folder(s)
+
+
+
+P <pack-sha1>
+B <blob-sha1>...
+
+
+
