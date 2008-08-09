@@ -21,3 +21,6 @@ F <sha1> <size> <time> <attr> <relative-path>
 LF <sha1> <size> <time> <attr> <relative-path> <local-path>
 	local file information
 	
+CV <component> * <role> <platform> <version>
+	component version binding (used inside a product version map)
+	the second field is reserved and currently must always be a star ("*")
