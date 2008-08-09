@@ -108,8 +108,8 @@ public class PackWriter {
                 ++fileCount;
             }
             if (fileCount > 0) {
-                zout.close();
                 zout.finish();
+                zout.close();
                 String sha1 = computeHash(digest, buf, packTempFile);
                 File packFile = new File(packTempFile.getParentFile(), sha1 + ".zip");
                 if (!packTempFile.renameTo(packFile)) {
