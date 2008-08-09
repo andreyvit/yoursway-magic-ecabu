@@ -60,7 +60,7 @@ public class HashFiles {
                     throw new Exit(3);
                 }
                 String sha1 = computeHash(digest, buf, inputFile);
-                System.out.println(sha1);
+                System.out.println("B " + sha1 + " " + inputFile.length());
             }
         } catch (IOException e) {
             System.err.println("hashfiles: I/O error");
