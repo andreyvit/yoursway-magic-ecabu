@@ -10,6 +10,8 @@ for prog in packwriter hashfiles choosepacks lspack; do
   cd "$dir"
   jar cmf "$basedir/src/$prog-manifest.mf" "$basedir/lib/java/$prog.jar" $(find . -type f -name '*.class') ||
     { echo "$prog: jar failed."; rm -rf "$dir"; exit 1; }
+  cd "$basedir"
+  rm -rf "$dir"
 done
   
 cd "$basedir"

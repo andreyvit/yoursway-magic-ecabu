@@ -32,3 +32,4 @@ sha1="$(cat "$tmpfile" | grep '^LF' | bin/mae-write-pack)" ||
 ) >"$packlist"
 echo "final pack list for $ver:"
 cat "$packlist" | awk '{ print "\t", $2 }'
+rm "$tmpfile"
