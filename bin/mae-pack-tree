@@ -1,0 +1,34 @@
+#! /bin/bash
+p="$(pwd)"
+cd "$(dirname "$0")/.."
+base_dir="$(pwd)"
+cd "$p"
+source "$base_dir/lib/mae-lib-general.sh" ||
+  { echo "fatal error: cannot load magic ecabu library"; exit 13; }
+
+USAGE="usage: $(basename "$0") <version> <directory>"
+
+test -z "$1" &&
+  die "version not specified\n$USAGE"
+ver="$1"
+check_version "$ver" ||
+  die "version syntax incorrect\n$USAGE"
+  
+flatver="$(flatten_version "$ver")"
+tree="$tree_dir/$flatver.txt"
+packlist="$tree_dir/${flatver}_packlist.txt"
+test -f "$tree" ||
+  die "tree does not exist: $tree\nplease use mae-create-tree before invoking $(basename "$0")"
+
+tmpfile="$(mktemp -t choosepack.XXXXX)"
+cat "$tree" | $bin/mae-choose-packs --preserve >"$tmpfile" ||
+  die "mae-choose-packs failed"
+sha1="$(cat "$tmpfile" | grep '^LF' | bin/mae-write-pack)" ||
+  die "mae-write-pack failed."
+
+(
+  cat "$tmpfile" | grep "^P$tab"
+  test -n "$sha1" && echo -e "P\t$sha1\t$(filesize "$packs_dir/$sha1.zip")"
+) >"$packlist"
+echo "final pack list for $ver:"
+cat "$packlist" | awk '{ print "\t", $2 }'

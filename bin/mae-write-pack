@@ -11,6 +11,7 @@ sha1="$(java $JAVAFLAGS -jar "$base_dir/lib/java/packwriter.jar" -d "$packs_dir"
   die "packwriter failed."
 
 test -n "$sha1" && {
+  echo "storing pack $sha1." 1>&2
   $bin/mae-create-catalog "$sha1"
   echo "$sha1"
 }

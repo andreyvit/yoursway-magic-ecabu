@@ -26,3 +26,5 @@ catalog_dir="$MAE_DIR/catalog"
 tree_dir="$MAE_DIR/trees"
 
 JAVAFLAGS="-Xmx128m -Xms128m"
+
+tab="$(echo -e "\t")"
