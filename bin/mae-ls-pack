@@ -14,5 +14,5 @@ pack="$packs_dir/$sha1.zip"
 test -f "$pack" ||
   die "pack not found: $pack"
 
-echo "P $sha1"
+echo -e "P\t$sha1\t$(filesize "$packs_dir/$sha1.zip")"
 java $JAVAFLAGS -jar "$base_dir/lib/java/lspack.jar" "$pack"

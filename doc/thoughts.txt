@@ -118,6 +118,6 @@ P <pack-sha1> <pack-size>
 B <blob-sha1> <blob-size>
 D <directory>
 F <sha1> <size> <time> <attr> <name>
-FL <sha1> <size> <time> <attr> <name> <local-source>
+LF <sha1> <size> <time> <attr> <name> <local-source>
 
 

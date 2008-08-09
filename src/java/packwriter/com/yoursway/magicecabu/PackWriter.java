@@ -72,16 +72,29 @@ public class PackWriter {
             for (String line = listIn.readLine(); line != null; line = listIn.readLine()) {
                 if ((line = line.trim()).length() == 0)
                     continue;
-                File inputFile = new File(line);
-                if (!inputFile.isFile()) {
-                    System.err.println("file not found: " + inputFile);
-                    throw new Exit(3);
+                String[] parts = line.split("\t");
+                
+                String sha1;
+                long time;
+                File inputFile;
+                if ("LF".equals(parts[0])) {
+                    sha1 = parts[1];
+                    time = Long.parseLong(parts[3]);
+                    inputFile = new File(parts[6]);
+                } else {
+                    inputFile = new File(line);
+                    if (!inputFile.isFile()) {
+                        System.err.println("file not found: " + inputFile);
+                        throw new Exit(3);
+                    }
+                    sha1 = computeHash(digest, buf, inputFile);
+                    time = inputFile.lastModified();
                 }
-                String sha1 = computeHash(digest, buf, inputFile);
+                
                 ZipEntry entry = new ZipEntry(sha1);
                 // could set size here too, but it would be useless, because without knowledge of the compressed
                 // size and the CRC32 checksum, the size won't be written to the zip file anyway
-                entry.setTime(inputFile.lastModified());
+                entry.setTime(time);
                 zout.putNextEntry(entry);
                 BufferedInputStream in = new BufferedInputStream(new FileInputStream(inputFile));
                 try {

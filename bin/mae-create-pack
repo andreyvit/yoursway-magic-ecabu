@@ -6,4 +6,4 @@ cd "$p"
 source "$base_dir/lib/mae-lib-general.sh" ||
   { echo "fatal error: cannot load magic ecabu library"; exit 13; }
 
-$bin/mae-list-files "$@" | $bin/mae-write-pack
+$bin/mae-find-files "$@" | $bin/mae-write-pack

@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.zip.ZipEntry;
@@ -34,13 +35,37 @@ public class HashFiles {
     
     public static void main(String[] args) {
         try {
-            proceed();
+            Mode mode = Mode.BLOB;
+            for (int i = 0; i < args.length; i++)
+                if ("--blob".equals(args[i]))
+                    mode = Mode.BLOB;
+                else if ("--tree".equals(args[i]))
+                    mode = Mode.TREE;
+            proceed(mode);
         } catch (Exit exit) {
             exit.proceed();
         }
     }
     
-    private static void proceed() {
+    enum Mode {
+        
+        BLOB {
+            public void output(PrintStream out, File file, String sha1, String[] parts) {
+                System.out.println("B\t" + sha1 + "\t" + file.length());
+            }
+        },
+        
+        TREE {
+            public void output(PrintStream out, File file, String sha1, String[] parts) {
+                System.out.println("LF\t" + sha1 + "\t" + file.length() + "\t" + file.lastModified() + "\t" + parts[1] + "\t" + file.getPath());
+            }
+        };
+        
+        public abstract void output(PrintStream out, File file, String sha1, String[] parts);
+        
+    }
+    
+    private static void proceed(Mode mode) {
         MessageDigest digest;
         try {
             digest = MessageDigest.getInstance("sha-1");
@@ -54,13 +79,14 @@ public class HashFiles {
             for (String line = listIn.readLine(); line != null; line = listIn.readLine()) {
                 if ((line = line.trim()).length() == 0)
                     continue;
-                File inputFile = new File(line);
+                String[] parts = line.split("\t");
+                File inputFile = new File(parts[0]);
                 if (!inputFile.isFile()) {
                     System.err.println("hashfiles: file not found: " + inputFile);
                     throw new Exit(3);
                 }
                 String sha1 = computeHash(digest, buf, inputFile);
-                System.out.println("B " + sha1 + " " + inputFile.length());
+                mode.output(System.out, inputFile, sha1, parts);
             }
         } catch (IOException e) {
             System.err.println("hashfiles: I/O error");

@@ -1,5 +1,0 @@
-#! /bin/bash
-while test -n "$1"; do
-  find "$1" -type f
-  shift
-done

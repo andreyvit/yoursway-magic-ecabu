@@ -3,6 +3,10 @@ die() {
   exit 1
 }
 
+filesize() {
+  perl -e 'print -s $ARGV[0]' $1
+}
+
 test -z "$MAE_DIR" &&
   die "\$MAE_DIR should be set and point to a local MAE directory"
 test -d "$MAE_DIR" ||

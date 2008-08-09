@@ -1,0 +1,36 @@
+#! /bin/bash
+passthru() {
+  cat
+}
+fixup() {
+  read
+  while test -n "$REPLY"; do
+    if ! test "$1" == "$REPLY"; then
+      echo -e "$REPLY\t${REPLY#$1/}"
+    fi
+    read
+  done
+}
+
+mode=passthru
+cont=true
+while $cont && test -n "$1"; do
+  case $1 in
+    --raw)
+      mode=passthru
+      shift;;
+    --tree)
+      mode=fixup
+      shift;;
+    -*)
+      echo "bad option '$1'"
+      exit 13;;
+    *)
+      cont=false;;
+  esac
+done
+
+while test -n "$1"; do
+  find "$1" -type f | $mode "$1"
+  shift
+done

@@ -250,7 +250,7 @@ public class ChoosePacks {
             for (String line = in.readLine(); line != null; line = in.readLine()) {
                 if ((line = line.trim()).length() == 0)
                     continue;
-                String[] parts = line.split(" ");
+                String[] parts = line.split("\t");
                 String cmd = parts[0];
                 if ("P".equals(cmd)) {
                     currentPack = new Pack(parts[1]);

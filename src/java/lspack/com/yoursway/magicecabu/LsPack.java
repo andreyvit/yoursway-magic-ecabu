@@ -57,7 +57,7 @@ public class LsPack {
                         segment = zin.read(dummy);
                     }
                 }
-                System.out.println("B " + sha1 + " " + size);
+                System.out.println("B\t" + sha1 + "\t" + size);
                 entry = zin.getNextEntry();
             }
             zin.close();

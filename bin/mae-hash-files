@@ -5,5 +5,23 @@ base_dir="$(pwd)"
 cd "$p"
 source "$base_dir/lib/mae-lib-general.sh" ||
   { echo "fatal error: cannot load magic ecabu library"; exit 13; }
+  
+mode="--blob"
+while test -n "$1"; do
+  case $1 in
+    --blob)
+      mode="--blob"
+      shift;;
+    --tree)
+      mode="--tree"
+      shift;;
+    -*)
+      echo "bad option '$1'"
+      exit 13;;
+    *)
+      echo "no positional arguments expected: '$1'"
+      exit 13;;
+  esac
+done
 
-java $JAVAFLAGS -jar "$base_dir/lib/java/hashfiles.jar"
+java $JAVAFLAGS -jar "$base_dir/lib/java/hashfiles.jar" $mode
