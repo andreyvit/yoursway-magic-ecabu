@@ -7,6 +7,6 @@ source "$base_dir/lib/mae-lib-general.sh" ||
   { echo "fatal error: cannot load magic ecabu library"; exit 13; }
 
 mkdir -p "$packs_dir"
-sha1="$(java -jar "$base_dir/lib/java/packwriter.jar" -d "$packs_dir")" ||
+sha1="$(java $JAVAFLAGS -jar "$base_dir/lib/java/packwriter.jar" -d "$packs_dir")" ||
   die "packwriter failed."
 echo "$sha1"

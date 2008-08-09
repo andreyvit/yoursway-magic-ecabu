@@ -6,4 +6,4 @@ cd "$p"
 source "$base_dir/lib/mae-lib-general.sh" ||
   { echo "fatal error: cannot load magic ecabu library"; exit 13; }
 
-java -Xmx128m -Xms128m -jar "$base_dir/lib/java/hashfiles.jar"
+java $JAVAFLAGS -jar "$base_dir/lib/java/hashfiles.jar"
