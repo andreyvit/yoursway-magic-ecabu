@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/java/packwriter"/>
+	<classpathentry kind="src" path="src/java/choosepacks"/>
+	<classpathentry kind="src" path="src/java/hashfiles"/>
+	<classpathentry kind="src" path="src/tests/choosepacks"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="eclipsebin"/>
 </classpath>
