@@ -1,5 +1,5 @@
 die() {
-  echo "$*"
+  echo -e "$*"
   exit 1
 }
 

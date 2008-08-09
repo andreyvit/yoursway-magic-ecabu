@@ -6,30 +6,65 @@ cd "$p"
 source "$base_dir/lib/mae-lib-general.sh" ||
   { echo "fatal error: cannot load magic ecabu library"; exit 13; }
 
-USAGE="usage: $(basename "$0") <version> <directory>"
+USAGE="usage: $(basename "$0") <version> [<version>]..."
 
 test -z "$1" &&
   die "version not specified\n$USAGE"
-ver="$1"
-check_version "$ver" ||
-  die "version syntax incorrect\n$USAGE"
+
+pack_tree() {
+  ver="$1"
+  flatver="$(flatten_version "$ver")"
+  tree="$tree_dir/$flatver.txt"
+  packlist="$tree_dir/${flatver}_packlist.txt"
+  test -f "$tree" ||
+    die "tree does not exist: $tree\nplease use mae-create-tree before invoking $(basename "$0")"
+
+  tmpfile="$(mktemp -t choosepack.XXXXX)"
+  cat "$tree" | $bin/mae-choose-packs --preserve >"$tmpfile" ||
+    die "mae-choose-packs failed"
+  sha1="$(cat "$tmpfile" | grep '^LF' | bin/mae-write-pack)" ||
+    die "mae-write-pack failed."
+
+  (
+    cat "$tmpfile" | grep "^P$tab"
+    test -n "$sha1" && echo -e "P\t$sha1\t$(filesize "$packs_dir/$sha1.zip")"
+  ) >"$packlist"
+  echo "final pack list for $ver:"
+  cat "$packlist" | awk '{ print "\t", $2 }'
+  rm "$tmpfile"
+}
+
+vercount=0
+test -n "$2" && multiver=true
+verlist=""
+while test -n "$1"; do
+  check_version "$1" || die "version syntax incorrect: $1\n$USAGE"
+  verlist="$verlist $1"
+  vercount=$((vercount+1))
+  shift
+done
+
+if test $vercount -gt 1; then
+  # put all common blobs into a separate pack (if any)
+  for ver in $verlist; do
+    flatver="$(flatten_version "$ver")"
+    tree="$tree_dir/$flatver.txt"
+    cat "$tree" | grep '^LF'
+  done | sort | awk -v vercount=$vercount '
+    {
+      if ($2 != last) {
+        last = $2;
+        count = 1
+      } else {
+        count += 1;
+        if (count == vercount)
+          print $0;
+      }
+    }
+  ' | $bin/mae-choose-packs --preserve | grep "^LF$tab" | $bin/mae-write-pack >/dev/null ||
+    die "failure when calculating or writing the common pack."
+fi
   
-flatver="$(flatten_version "$ver")"
-tree="$tree_dir/$flatver.txt"
-packlist="$tree_dir/${flatver}_packlist.txt"
-test -f "$tree" ||
-  die "tree does not exist: $tree\nplease use mae-create-tree before invoking $(basename "$0")"
-
-tmpfile="$(mktemp -t choosepack.XXXXX)"
-cat "$tree" | $bin/mae-choose-packs --preserve >"$tmpfile" ||
-  die "mae-choose-packs failed"
-sha1="$(cat "$tmpfile" | grep '^LF' | bin/mae-write-pack)" ||
-  die "mae-write-pack failed."
-
-(
-  cat "$tmpfile" | grep "^P$tab"
-  test -n "$sha1" && echo -e "P\t$sha1\t$(filesize "$packs_dir/$sha1.zip")"
-) >"$packlist"
-echo "final pack list for $ver:"
-cat "$packlist" | awk '{ print "\t", $2 }'
-rm "$tmpfile"
+for ver in $verlist; do
+  pack_tree "$ver"
+done
