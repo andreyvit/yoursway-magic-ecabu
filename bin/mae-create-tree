@@ -1,0 +1,23 @@
+#! /bin/bash
+p="$(pwd)"
+cd "$(dirname "$0")/.."
+base_dir="$(pwd)"
+cd "$p"
+source "$base_dir/lib/mae-lib-general.sh" ||
+  { echo "fatal error: cannot load magic ecabu library"; exit 13; }
+  
+USAGE="usage: $(basename "$0") <version> <directory>"
+
+test -z "$1" &&
+  die "version not specified\n$USAGE"
+ver="$1"
+check_version "$ver" ||
+  die "version syntax incorrect\n$USAGE"
+
+test -z "$2" &&
+  die "directory not specified\n$USAGE"
+dir="$2"
+
+base="$(flatten_version "$ver")"
+mkdir -p "$tree_dir"
+$bin/mae-build-tree "$dir" >"$tree_dir/$base.txt"
