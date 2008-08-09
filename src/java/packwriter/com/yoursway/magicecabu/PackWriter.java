@@ -69,6 +69,7 @@ public class PackWriter {
                     1024 * 1024);
             ZipOutputStream zout = new ZipOutputStream(out);
             byte[] buf = new byte[10 * 1024 * 1024];
+            int fileCount = 0;
             for (String line = listIn.readLine(); line != null; line = listIn.readLine()) {
                 if ((line = line.trim()).length() == 0)
                     continue;
@@ -102,16 +103,19 @@ public class PackWriter {
                 } finally {
                     in.close();
                 }
+                ++fileCount;
             }
             zout.finish();
             zout.close();
-            String sha1 = computeHash(digest, buf, packTempFile);
-            File packFile = new File(packTempFile.getParentFile(), sha1 + ".zip");
-            if (!packTempFile.renameTo(packFile)) {
-                System.err.println("cannot rename " + packTempFile + " into " + packFile);
-                throw new Exit(4);
+            if (fileCount > 0) {
+                String sha1 = computeHash(digest, buf, packTempFile);
+                File packFile = new File(packTempFile.getParentFile(), sha1 + ".zip");
+                if (!packTempFile.renameTo(packFile)) {
+                    System.err.println("cannot rename " + packTempFile + " into " + packFile);
+                    throw new Exit(4);
+                }
+                System.out.println(sha1);
             }
-            System.out.println(sha1);
         } catch (IOException e) {
             System.err.println("pack writer: I/O error");
             packTempFile.delete();
