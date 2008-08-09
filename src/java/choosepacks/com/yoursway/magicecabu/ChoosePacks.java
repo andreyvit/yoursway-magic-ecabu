@@ -184,7 +184,7 @@ public class ChoosePacks {
         }
         
         public boolean matches(long absThreshold, double relThreshold) {
-            return (absThreshold > uselessSize) || (relThreshold > uselessRatio);
+            return (absThreshold > uselessSize) && (relThreshold > uselessRatio);
         }
         
         public int compareTo(Pack o) {
@@ -211,9 +211,15 @@ public class ChoosePacks {
         Collection<Pack> chosen = new ArrayList<Pack>(packs.size());
         int blobsToGo = blobs.size();
         
+        Pack maxPack = null;
         while (blobsToGo > 0) {
             for (Iterator<Pack> iterator = packs.iterator(); iterator.hasNext();) {
                 Pack pack = (Pack) iterator.next();
+                if (pack == maxPack) {
+                    // the one chosen on the previous iteration
+                    iterator.remove();
+                    continue;
+                }
                 pack.calculateStatistics();
                 if (!pack.matches(absThreshold, relThreshold))
                     iterator.remove();
@@ -221,7 +227,7 @@ public class ChoosePacks {
             
             if (packs.isEmpty())
                 break;
-            Pack maxPack = max(packs);
+            maxPack = max(packs);
             chosen.add(maxPack);
             blobsToGo -= maxPack.markBlobsAsCovered();
         }
@@ -235,6 +241,7 @@ public class ChoosePacks {
         for (Blob blob : blobs.values())
             if (!blob.isCovered())
                 out.println("B " + blob.getSha1() + " " + blob.getSize());
+        out.close();
     }
     
     private static void readInput(BufferedReader in, Map<String, Blob> blobs, Collection<Pack> packs) {
