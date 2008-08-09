@@ -1,0 +1,9 @@
+#! /bin/bash
+p="$(pwd)"
+cd "$(dirname "$0")/.."
+base_dir="$(pwd)"
+cd "$p"
+source "$base_dir/lib/mae-lib-general.sh" ||
+  { echo "fatal error: cannot load magic ecabu library"; exit 13; }
+  
+( cat; cat "$catalog_dir"/*.txt ) | java $JAVAFLAGS -jar "$base_dir/lib/java/choosepacks.jar"
