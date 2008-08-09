@@ -78,7 +78,11 @@ public class PackWriter {
                     throw new Exit(3);
                 }
                 String sha1 = computeHash(digest, buf, inputFile);
-                zout.putNextEntry(new ZipEntry(sha1));
+                ZipEntry entry = new ZipEntry(sha1);
+                // could set size here too, but it would be useless, because without knowledge of the compressed
+                // size and the CRC32 checksum, the size won't be written to the zip file anyway
+                entry.setTime(inputFile.lastModified());
+                zout.putNextEntry(entry);
                 BufferedInputStream in = new BufferedInputStream(new FileInputStream(inputFile));
                 try {
                     copyStreamToStream(zout, buf, in);
