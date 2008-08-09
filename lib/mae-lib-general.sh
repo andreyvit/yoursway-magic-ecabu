@@ -11,6 +11,10 @@ check_version() {
   perl -e 'exit ($ARGV[0] =~ /^[a-z0-9.-]+\/[a-z0-9.-]+\/[a-z0-9.-]+$/ ? 0 : 1)' "$1"
 }
 
+explode_version() {
+  perl -e '$ARGV[0] =~ /^([a-z0-9.-]+)\/([a-z0-9.-]+)\/([a-z0-9.-]+)$/; print "$1 $2 $3"' "$1"
+}
+
 flatten_version() {
   echo "${1//\//_}"
 }
@@ -25,6 +29,7 @@ packs_dir="$MAE_DIR/packs"
 catalog_dir="$MAE_DIR/catalog"
 tree_dir="$MAE_DIR/trees"
 component_dir="$MAE_DIR/components"
+product_dir="$MAE_DIR/products"
 
 JAVAFLAGS="-Xmx128m -Xms128m"
 
