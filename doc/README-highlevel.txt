@@ -1,12 +1,105 @@
 Magic Ecabu high-level concepts and commands reference
 ======================================================
 
-The whole usage looks like this:
+To understand the layout of an update repository, you need to know several concepts:
+
+Components
+----------
+
+Components are the smallest units of installation: a given product (application) installation contains a specific set of installed components. Each file that has been installed with the product belongs to exactly one of the components.
+
+Some components might be shared by several products, which means that each product is using the components in question. The sharing is on the update site side only: there is a single copy of each component's files on the update site, but a new copy of the component is installed with every product that needs it.
+
+An update site contains multiple versions of a component, but neither of them is designated as "stable", "integration" etc. There is no notion of stability at the component level.
+
+Component versions are specified using a strict format "component-name/platform/version", e.g. eclipse/mac/3.4. This format is enforced and interpreted by all commands dealing with versions.
+
+
+Products
+--------
+
+Product is the largest unit of installation. A product consists of one or more components. The product maintainers decide which versions of every component they want their users to use.
+
+The product versioning might differ depending on a “stability level” chosen by the user, with examples being "stable", "integration" and "nightly". Product maintainers define a set of such stability levels (called roles currently, which is a very stupid name), and decide which version of each component corresponds to each role.
+
+
+Pack
+----
+
+A unit of uploading and downloading. A pack is a zip file containing several other files, with each file named after SHA1 hash of its content.
+
+A pack thus does *not* associate any specific file name or path with the files it carries. A pack alone cannot be used to reconstruct a file system structure of the application. The only thing a pack does is carrying the actual file content.
+
+Each component version has a version definition file that specifies a way to reconstruct the file system tree from the data inside one or more packs:
+	b143427e1d89442420f28cc339dc63dd864fa4cc myapp.exe
+	de775019e7319f150b50550c957a7ab92a494900 lib/somelib.dll
+	1b8c7c2b2111d54fb8235109b8cd2417e3c644fe help/myapp.html
+Given a SHA1 hash of the data (which is the leftmost field above), the actual data can be obtained by downloading one or more packs and extracting the necessary files from them. (The set of packs to be downloaded is also specified in the component definition file.)
+
+Packs serve 4 purposes:
+
+1) Download size minimization. It is likely that in a new version of a component most files are unchanged, and thus the version definition file of the new component will refer to a large pack(s) that the user already has, and a (small) pack with only the changed files.
+
+2) Connection count minimization. A pack consolidates multiple source files into a large unit, so only a single connection to the server is needed to download them all.
+
+3) Upload size minimization. If the application is large, and a new build is needed urgently, it is not wise to wait for the whole application to be uploaded.
+
+3) Update site storage optimization. Storing gigabytes of duplicate bits of various product versions is a waste and costs money.
+
+
+Tree
+----
+
+An intermediate object created when defining a new version of a component. A tree lists all the files of the component, together with a corresponding path in the local file system. (A tree is thus local to a single computer and should never be transferred.)
+
+
+Update site layout
+------------------
+
+packs/<sha1>.zip
+	– here are the packs (which are themselves named after SHA1 of their content
+	to prevent duplicate packs).
+
+components/<name>_<platform>_<version>.txt
+	— is a component definition file that lists a set of packs needed by this component,
+	and the layout of files on the file system.
+
+products/<name>/versions_<platform>.txt
+	— lists component versions for the given product.
+	
+The following directories are not required by the update process, but are required to be present locally for the operation of Magic Ecabu. They don't need to be transferred to a public update site.
+
+catalog/<sha1>.txt
+	— lists SHA1 hashes of the files inside a corresponding pack; this speeds up
+	processing by avoiding operations on large pack files, and also allows to delete
+	the actual pack files locally after they have been transferred to the public
+	update site.
+	
+	Magic Ecabu does not need any pack files to operate, it only needs the corresponding
+	catalog files. And in case the catalog files are lost, they can always be regenerated
+	from the pack files.
+	
+trees/<name>_<plaftorm>_<version>.txt
+	— lists the files of the given tree.
+	
+trees/<name>_<plaftorm>_<version>_packlist.txt
+	— lists the set of packs that together entirely contain all the files of the tree;
+	the packlist is saved by mae-pack-tree command and is then used by mae-create-version.
+	
+The whole trees/ directory should never be transferred to other computers and can be safely deleted.
+
+
+Usage
+-----
+
+A process of publishing a new version of a component looks like this:
 
 	% mae-create-tree eclipse/mac/3.4 /Applications/Eclipse\ 3.4.app 
 	% mae-pack-tree eclipse/mac/3.4
 	% mae-create-version eclipse/mac/3.4
 	% mae-promote-version eclipse mac eclipse/mac/3.4 stable
+	
+Then use e.g. s3sync to upload the new data to a public update site stored on S3.
 
 
 mae-create-tree
