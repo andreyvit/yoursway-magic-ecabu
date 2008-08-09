@@ -1,0 +1,45 @@
+#! /bin/bash
+p="$(pwd)"
+cd "$(dirname "$0")/.."
+base_dir="$(pwd)"
+cd "$p"
+source "$base_dir/lib/mae-lib-general.sh" ||
+  { echo "fatal error: cannot load magic ecabu library"; exit 13; }
+
+USAGE="usage: $(basename "$0") <version>"
+
+force=false
+cont=true
+while $cont && test -n "$1"; do
+  case $1 in
+    --force | -f)
+      force=true
+      shift;;
+    -*)
+      echo "bad option '$1'"
+      exit 13;;
+    *)
+      cont=false;;
+  esac
+done
+
+test -z "$1" &&
+  die "version not specified\n$USAGE"
+ver="$1"
+flatver="$(flatten_version "$ver")"
+tree="$tree_dir/$flatver.txt"
+test -f "$tree" ||
+  die "tree does not exist: $tree\nplease use mae-create-tree before invoking $(basename "$0")"
+packlist="$tree_dir/${flatver}_packlist.txt"
+test -f "$packlist" ||
+  die "pack list does not exist: $tree\nplease use mae-pack-tree before invoking $(basename "$0")"
+
+mkdir -p "$component_dir"  
+component="$component_dir/$flatver.txt"
+! $force && test -f "$component" &&
+  die "component $ver is already defined; use $(basename "$0") -f to overwrite."
+
+(
+  cat "$packlist"
+  cat "$tree" | $bin/mae-tree-to-map
+) >"$component"

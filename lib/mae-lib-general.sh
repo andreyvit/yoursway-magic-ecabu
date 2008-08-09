@@ -24,6 +24,7 @@ bin="$base_dir/bin"
 packs_dir="$MAE_DIR/packs"
 catalog_dir="$MAE_DIR/catalog"
 tree_dir="$MAE_DIR/trees"
+component_dir="$MAE_DIR/components"
 
 JAVAFLAGS="-Xmx128m -Xms128m"
 

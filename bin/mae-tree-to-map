@@ -1,0 +1,2 @@
+#! /bin/bash
+awk 'BEGIN { OFS="\t"; FS="\t" } /^LF\t/ { print "F", $2, $3, $4, $5, $6 }'

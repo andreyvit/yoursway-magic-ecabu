@@ -1,6 +1,16 @@
 Magic Ecabu high-level concepts and commands reference
 ======================================================
 
+The whole usage looks like this:
+
+% mae-create-tree eclipse/mac/3.4 /Applications/Eclipse\ 3.4.app 
+% mae-pack-tree eclipse/mac/3.4
+storing pack 96bcc08fc7a0252be8c25c61042b4171ef3869ee.
+final pack list for eclipse/mac/3.4:
+	 96bcc08fc7a0252be8c25c61042b4171ef3869ee
+% mae-create-version eclipse/mac/3.4
+
+
 
 mae-create-tree
 ---------------
