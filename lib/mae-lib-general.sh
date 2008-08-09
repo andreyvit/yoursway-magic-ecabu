@@ -10,5 +10,6 @@ test -d "$MAE_DIR" ||
 
 bin="$base_dir/bin"
 packs_dir="$MAE_DIR/packs"
+catalog_dir="$MAE_DIR/catalog"
 
 JAVAFLAGS="-Xmx128m -Xms128m"
