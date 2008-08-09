@@ -4,6 +4,7 @@
 	<classpathentry kind="src" path="src/java/choosepacks"/>
 	<classpathentry kind="src" path="src/java/hashfiles"/>
 	<classpathentry kind="src" path="src/tests/choosepacks"/>
+	<classpathentry kind="src" path="src/java/lspack"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="eclipsebin"/>

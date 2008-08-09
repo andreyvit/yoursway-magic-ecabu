@@ -1,0 +1,18 @@
+#! /bin/bash
+p="$(pwd)"
+cd "$(dirname "$0")/.."
+base_dir="$(pwd)"
+cd "$p"
+source "$base_dir/lib/mae-lib-general.sh" ||
+  { echo "fatal error: cannot load magic ecabu library"; exit 13; }
+
+test -z "$1" &&
+  die "expected: sha1 of a pack as an argument"
+sha1="$1"
+
+pack="$packs_dir/$sha1.zip"
+test -f "$pack" ||
+  die "pack not found: $pack"
+
+echo "P $sha1"
+java $JAVAFLAGS -jar "$base_dir/lib/java/lspack.jar" "$pack"
