@@ -67,7 +67,7 @@ public class PackWriter {
         try {
             BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(packTempFile),
                     1024 * 1024);
-            ZipOutputStream zout = new ZipOutputStream(out);
+            ZipOutputStream zout = null;
             byte[] buf = new byte[10 * 1024 * 1024];
             int fileCount = 0;
             for (String line = listIn.readLine(); line != null; line = listIn.readLine()) {
@@ -92,6 +92,8 @@ public class PackWriter {
                     time = inputFile.lastModified();
                 }
                 
+                if (zout == null)
+                    zout = new ZipOutputStream(out);
                 ZipEntry entry = new ZipEntry(sha1);
                 // could set size here too, but it would be useless, because without knowledge of the compressed
                 // size and the CRC32 checksum, the size won't be written to the zip file anyway
@@ -105,9 +107,9 @@ public class PackWriter {
                 }
                 ++fileCount;
             }
-            zout.finish();
-            zout.close();
             if (fileCount > 0) {
+                zout.close();
+                zout.finish();
                 String sha1 = computeHash(digest, buf, packTempFile);
                 File packFile = new File(packTempFile.getParentFile(), sha1 + ".zip");
                 if (!packTempFile.renameTo(packFile)) {
@@ -115,9 +117,12 @@ public class PackWriter {
                     throw new Exit(4);
                 }
                 System.out.println(sha1);
+            } else {
+                out.close();
+                packTempFile.delete();
             }
         } catch (IOException e) {
-            System.err.println("pack writer: I/O error");
+            System.err.println("pack writer: I/O error - " + e.getClass().getName() + " " + e.getMessage());
             packTempFile.delete();
             throw new Exit(1);
         }
