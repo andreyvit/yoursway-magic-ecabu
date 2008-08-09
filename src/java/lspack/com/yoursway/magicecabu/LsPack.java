@@ -45,9 +45,18 @@ public class LsPack {
         try {
             ZipInputStream zin = new ZipInputStream(new BufferedInputStream(new FileInputStream(pack), 1024 * 1024));
             ZipEntry entry = zin.getNextEntry();
+            byte[] dummy = new byte[1024 * 1024];
             while (entry != null) {
                 String sha1 = entry.getName();
                 long size = entry.getSize();
+                if (size == -1) {
+                    size = 0;
+                    int segment = zin.read(dummy);
+                    while (segment > 0) {
+                        size += segment;
+                        segment = zin.read(dummy);
+                    }
+                }
                 System.out.println("B " + sha1 + " " + size);
                 entry = zin.getNextEntry();
             }
