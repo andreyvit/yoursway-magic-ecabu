@@ -6,10 +6,9 @@ cd "$p"
 source "$base_dir/lib/mae-lib-general.sh" ||
   { echo "fatal error: cannot load magic ecabu library"; exit 13; }
 
-mkdir -p "$packs_dir"
-sha1="$(java $JAVAFLAGS -jar "$base_dir/lib/java/packwriter.jar" -d "$packs_dir")" ||
-  die "packwriter failed."
+test -z "$1" &&
+  die "expected: sha1 of a pack as an argument"
+sha1="$1"
 
-$bin/mae-create-catalog "$sha1"
-
-echo "$sha1"
+mkdir -p "$catalog_dir"
+$bin/mae-ls-pack "$sha1" >"$catalog_dir/$sha1.txt"
