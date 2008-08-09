@@ -255,14 +255,15 @@ public class ChoosePacks {
                 if ("P".equals(cmd)) {
                     currentPack = new Pack(parts[1]);
                     packs.add(currentPack);
-                } else if ("B".equals(cmd)) {
+                } else if ("B".equals(cmd) || "F".equals(cmd) || "LF".equals(cmd)) {
                     String sha1 = parts[1];
+                    String size = parts[2];
                     if (currentPack == null)
-                        blobs.put(sha1, new Blob(sha1, parseLong(parts[2])));
+                        blobs.put(sha1, new Blob(sha1, parseLong(size)));
                     else {
                         Blob blob = blobs.get(sha1);
                         if (blob == null)
-                            currentPack.addUseless(parseLong(parts[2]));
+                            currentPack.addUseless(parseLong(size));
                         else
                             currentPack.addUseful(blob);
                     }
