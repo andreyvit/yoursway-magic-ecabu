@@ -2,7 +2,8 @@
 cd "$(dirname "$0")"
 basedir="$(pwd)"
 
-for prog in packwriter; do
+for prog in packwriter hashfiles; do
+  echo "building $prog..."
   dir="$(mktemp -d -t buildXXXXX)"
   javac -d "$dir" $(find "$basedir/src/java/$prog" -type f -name '*.java') ||
     { echo "$prog: javac failed."; rm -rf "$dir"; exit 1; }
