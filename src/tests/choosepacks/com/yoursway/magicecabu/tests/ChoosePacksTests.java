@@ -15,7 +15,7 @@ public class ChoosePacksTests {
     
     void check(String in, String expected) {
         StringWriter out = new StringWriter();
-        ChoosePacks.proceed(new BufferedReader(new StringReader(in)), new PrintWriter(out), 1000, 0.5);
+        ChoosePacks.proceed(new BufferedReader(new StringReader(in)), new PrintWriter(out), 1000, 0.5, false);
         assertEquals(expected.trim(), out.toString().trim());
     }
     

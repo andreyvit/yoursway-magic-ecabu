@@ -87,6 +87,7 @@ public class ChoosePacks {
         try {
             long absThreshold = 1024 * 512;
             double relThreshold = 0.2;
+            boolean preserve = false;
             for (int i = 0; i < args.length; i++) {
                 if ("--absthreshold".equals(args[i])) {
                     String value = args[++i];
@@ -94,6 +95,8 @@ public class ChoosePacks {
                 } else if ("--relthreshold".equals(args[i])) {
                     String value = args[++i];
                     relThreshold = parsePercents(value);
+                } else if ("--preserve".equals(args[i])) {
+                    preserve = true;
                 } else {
                     System.err.println("unknown option: " + args[i]);
                     throw new Exit(10);
@@ -101,7 +104,7 @@ public class ChoosePacks {
             }
             BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
             PrintWriter out = new PrintWriter(new OutputStreamWriter(System.out));
-            proceed(in, out, absThreshold, relThreshold);
+            proceed(in, out, absThreshold, relThreshold, preserve);
         } catch (Exit exit) {
             exit.proceed();
         }
@@ -114,12 +117,15 @@ public class ChoosePacks {
         private final long size;
         
         private boolean covered = false;
+
+        private final String line;
         
-        public Blob(String sha1, long size) {
+        public Blob(String sha1, long size, String line) {
             if (sha1 == null)
                 throw new NullPointerException("sha1 is null");
             this.sha1 = sha1;
             this.size = size;
+            this.line = line;
         }
         
         public String getSha1() {
@@ -128,6 +134,10 @@ public class ChoosePacks {
         
         public long getSize() {
             return size;
+        }
+        
+        public String getLine() {
+            return line;
         }
         
         public boolean isCovered() {
@@ -151,15 +161,22 @@ public class ChoosePacks {
         private long uselessSize = 0;
         
         private double uselessRatio;
+
+        private final long size;
         
-        public Pack(String sha1) {
+        public Pack(String sha1, long size) {
             if (sha1 == null)
                 throw new NullPointerException("sha1 is null");
             this.sha1 = sha1;
+            this.size = size;
         }
         
         public String getSha1() {
             return sha1;
+        }
+        
+        public long getSize() {
+            return size;
         }
         
         public void addUseful(Blob blob) {
@@ -203,10 +220,10 @@ public class ChoosePacks {
         
     }
     
-    public static void proceed(BufferedReader in, PrintWriter out, long absThreshold, double relThreshold) {
+    public static void proceed(BufferedReader in, PrintWriter out, long absThreshold, double relThreshold, boolean preserve) {
         Map<String, Blob> blobs = new HashMap<String, Blob>();
         List<Pack> packs = new LinkedList<Pack>();
-        readInput(in, blobs, packs);
+        readInput(in, blobs, packs, preserve);
         
         Collection<Pack> chosen = new ArrayList<Pack>(packs.size());
         int blobsToGo = blobs.size();
@@ -232,19 +249,22 @@ public class ChoosePacks {
             blobsToGo -= maxPack.markBlobsAsCovered();
         }
         
-        writeOutput(out, blobs, chosen);
+        writeOutput(out, blobs, chosen, preserve);
     }
     
-    private static void writeOutput(PrintWriter out, Map<String, Blob> blobs, Collection<Pack> chosen) {
+    private static void writeOutput(PrintWriter out, Map<String, Blob> blobs, Collection<Pack> chosen, boolean preserve) {
         for (Pack pack : chosen)
-            out.println("P " + pack.getSha1());
+            out.println("P\t" + pack.getSha1() + "\t" + pack.getSize());
         for (Blob blob : blobs.values())
             if (!blob.isCovered())
-                out.println("B " + blob.getSha1() + " " + blob.getSize());
+                if (preserve)
+                    out.println(blob.getLine());
+                else
+                    out.println("B " + blob.getSha1() + " " + blob.getSize());
         out.close();
     }
     
-    private static void readInput(BufferedReader in, Map<String, Blob> blobs, Collection<Pack> packs) {
+    private static void readInput(BufferedReader in, Map<String, Blob> blobs, Collection<Pack> packs, boolean preserve) {
         Pack currentPack = null;
         try {
             for (String line = in.readLine(); line != null; line = in.readLine()) {
@@ -253,13 +273,13 @@ public class ChoosePacks {
                 String[] parts = line.split("\t");
                 String cmd = parts[0];
                 if ("P".equals(cmd)) {
-                    currentPack = new Pack(parts[1]);
+                    currentPack = new Pack(parts[1], parseLong(parts[2]));
                     packs.add(currentPack);
                 } else if ("B".equals(cmd) || "F".equals(cmd) || "LF".equals(cmd)) {
                     String sha1 = parts[1];
                     String size = parts[2];
                     if (currentPack == null)
-                        blobs.put(sha1, new Blob(sha1, parseLong(size)));
+                        blobs.put(sha1, new Blob(sha1, parseLong(size), (preserve ? line : null)));
                     else {
                         Blob blob = blobs.get(sha1);
                         if (blob == null)

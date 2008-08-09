@@ -57,7 +57,7 @@ public class HashFiles {
         
         TREE {
             public void output(PrintStream out, File file, String sha1, String[] parts) {
-                System.out.println("LF\t" + sha1 + "\t" + file.length() + "\t" + file.lastModified() + "\t" + parts[1] + "\t" + file.getPath());
+                System.out.println("LF\t" + sha1 + "\t" + file.length() + "\t" + file.lastModified() + "\t" + "-" /*(file.isExecutable() ? "E" : "-")*/ + "\t" + parts[1] + "\t" + file.getPath());
             }
         };
         
