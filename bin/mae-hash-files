@@ -15,6 +15,9 @@ while test -n "$1"; do
     --tree)
       mode="--tree"
       shift;;
+    --plain)
+      mode="--plain"
+      shift;;
     -*)
       echo "bad option '$1'"
       exit 13;;

@@ -41,6 +41,8 @@ public class HashFiles {
                     mode = Mode.BLOB;
                 else if ("--tree".equals(args[i]))
                     mode = Mode.TREE;
+                else if ("--plain".equals(args[i]))
+                    mode = Mode.PLAIN;
             proceed(mode);
         } catch (Exit exit) {
             exit.proceed();
@@ -48,6 +50,12 @@ public class HashFiles {
     }
     
     enum Mode {
+        
+        PLAIN {
+            public void output(PrintStream out, File file, String sha1, String[] parts) {
+                System.out.println(sha1);
+            }
+        },
         
         BLOB {
             public void output(PrintStream out, File file, String sha1, String[] parts) {
