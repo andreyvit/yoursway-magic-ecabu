@@ -8,11 +8,11 @@ filesize() {
 }
 
 check_version() {
-  perl -e 'exit ($ARGV[0] =~ /^[a-z0-9.-]+\/[a-z0-9.-]+\/[a-z0-9.-]+$/ ? 0 : 1)' "$1"
+  perl -e 'exit ($ARGV[0] =~ /^[a-z0-9.-]+\/[a-z0-9.-]+\/[a-zA-Z0-9.-]+$/ ? 0 : 1)' "$1"
 }
 
 explode_version() {
-  perl -e '$ARGV[0] =~ /^([a-z0-9.-]+)\/([a-z0-9.-]+)\/([a-z0-9.-]+)$/; print "$1 $2 $3"' "$1"
+  perl -e '$ARGV[0] =~ /^([a-z0-9.-]+)\/([a-z0-9.-]+)\/([a-zA-Z0-9.-]+)$/; print "$1 $2 $3"' "$1"
 }
 
 flatten_version() {
