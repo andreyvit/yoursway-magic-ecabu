@@ -24,12 +24,19 @@ test -z "$MAE_DIR" &&
 test -d "$MAE_DIR" ||
   die "\$MAE_DIR points to a non-existent directory $MAE_DIR"
 
+test -z "$MAE_DEF_DIR" &&
+  die "\$MAE_DEF_DIR should be set and point to a directory containing various definitions"
+test -d "$MAE_DEF_DIR" ||
+  die "\$MAE_DEF_DIR points to a non-existent directory $MAE_DEF_DIR"
+
 bin="$base_dir/bin"
 packs_dir="$MAE_DIR/packs"
 catalog_dir="$MAE_DIR/catalog"
 tree_dir="$MAE_DIR/trees"
 component_dir="$MAE_DIR/components"
 product_dir="$MAE_DIR/products"
+suite_dir="$MAE_DIR/suites"
+product_def_dir="$MAE_DEF_DIR/product-defs"
 
 JAVAFLAGS="-Xmx128m -Xms128m"
 

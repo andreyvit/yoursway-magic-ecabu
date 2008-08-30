@@ -21,6 +21,26 @@ F <sha1> <size> <time> <attr> <relative-path>
 LF <sha1> <size> <time> <attr> <relative-path> <local-path>
 	local file information
 	
-CV <component> * <role> <platform> <version>
-	component version binding (used inside a product version map)
-	the second field is reserved and currently must always be a star ("*")
+PV <product> <release-type> <version>
+	product version
+
+CVB <versionspec>
+	a component of the product denoted by the last PV line
+
+ 	PV ide stable 1.2
+	CV ide-core/mac/1.0.125
+	CV ide-ruby/mac/1.0.435
+	CV ide-python/mac/1.0.872
+	
+CV <versionspec> <release-type>
+	
+C <name> <platform>
+	— component (inside a product def)
+	
+	
+CV	ide-ruby/mac/0.0.3	nighly
+CV	somelib/all/0.8		stable
+
+PV	ide	stable	0.99
+CVB	-ruby/mac/0.0.3
+	

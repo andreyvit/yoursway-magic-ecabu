@@ -6,21 +6,45 @@ To understand the layout of an update repository, you need to know several conce
 Components
 ----------
 
-Components are the smallest units of installation: a given product (application) installation contains a specific set of installed components. Each file that has been installed with the product belongs to exactly one of the components.
+Components are the smallest units of installation: a given application installation contains a specific set of installed components. Each file that has been installed with the application belongs to exactly one of the components.
 
-Some components might be shared by several products, which means that each product is using the components in question. The sharing is on the update site side only: there is a single copy of each component's files on the update site, but a new copy of the component is installed with every product that needs it.
+Some components might be shared by several applications, which means that each application is using the components in question. The sharing is on the update site side only: there is a single copy of each component's files on the update site, but a new copy of the component is installed with every application that needs it.
 
 An update site contains multiple versions of a component, but neither of them is designated as "stable", "integration" etc. There is no notion of stability at the component level.
 
 Component versions are specified using a strict format "component-name/platform/version", e.g. eclipse/mac/3.4. This format is enforced and interpreted by all commands dealing with versions.
 
 
+Suite
+-----
+
+A suite is the largest unit of installation, and is a singleton object from the updates point of view: it's a single application (or even a suite of applications, like “Apple iWork”) that is invoking the whole update machinary. A suite consists of one or more products.
+
+
 Products
 --------
 
-Product is the largest unit of installation. A product consists of one or more components. The product maintainers decide which versions of every component they want their users to use.
+A product is a user-visible unit of update. A product gives a common (product) version number to some specific versions of multiple components.
 
-The product versioning might differ depending on a “stability level” chosen by the user, with examples being "stable", "integration" and "nightly". Product maintainers define a set of such stability levels (called roles currently, which is a very stupid name), and decide which version of each component corresponds to each role.
+The product versioning might differ depending on a “release type” chosen by the user, with examples being "stable", "integration" and "nightly". Product maintainers define a set of such release types, and decide which version of each component corresponds to each release type.
+
+
+Component vs. product vs. suite
+-------------------------------
+
+The suite corresponds to the whole operating system application or a group of applications, like, say, “yoursway-ide” or “iwork” or “ms-office”.
+
+In a simple case, there may be one-to-one correspondance between suites, products and components. For example, a simple “corchy” suite might have a single product “corchy”, which might have a single component “corchy”. (Of course, for packing purposes there would be other components defined by the developer, like “google-collections” or “corchy-sync-trac”, but those components would not be propagated to the public update site.)
+
+However in a more complex case a need might arise to separate a suite from products and from components. Consider the following case:
+— YourSway IDE contains optional components (Ruby support, PHP support etc), and
+— There are third-party contributed components that do not participate in the release cycle of YourSway IDE, are marketed separately but still should be made available to the users on the main update site (say, a “Mega Language Pack”)
+
+The whole YourSway IDE is a suite (probably named “ide”).
+
+However, YourSway IDE consists of several components, like ide-core, ide-ruby and ide-php, some of which might not be installed. Still the users want to have a single notion of “YourSway IDE version”, so that an update dialog can say “YourSway IDE 1.0.3 released”. Thus an “ide” product should be defined.
+
+However the “Mega Language Pack” has a separate release cycle and thus has own version numbers too, so it's another product: “ide-megapack”. This product might have optional components too: “ide-megapack-algol”, “ide-megapack-ada”, “ide-megapack-cobol”. Still an update notification would say “Mega Language Pack 2.3 released”.
 
 
 Pack
@@ -28,7 +52,7 @@ Pack
 
 A unit of uploading and downloading. A pack is a zip file containing several other files, with each file named after SHA1 hash of its content.
 
-A pack thus does *not* associate any specific file name or path with the files it carries. A pack alone cannot be used to reconstruct a file system structure of the application. The only thing a pack does is carrying the actual file content.
+A pack thus does *not* associate any specific file name or path with the files it carries. A pack alone cannot be used to reconstruct a file system structure of the suite. The only thing a pack does is carrying the actual file content.
 
 Each component version has a version definition file that specifies a way to reconstruct the file system tree from the data inside one or more packs:
 	b143427e1d89442420f28cc339dc63dd864fa4cc myapp.exe
@@ -42,9 +66,9 @@ Packs serve 4 purposes:
 
 2) Connection count minimization. A pack consolidates multiple source files into a large unit, so only a single connection to the server is needed to download them all.
 
-3) Upload size minimization. If the application is large, and a new build is needed urgently, it is not wise to wait for the whole application to be uploaded.
+3) Upload size minimization. If the suite is large, and a new build is needed urgently, it is not wise to wait for the whole suite to be uploaded.
 
-3) Update site storage optimization. Storing gigabytes of duplicate bits of various product versions is a waste and costs money.
+3) Update site storage optimization. Storing gigabytes of duplicate bits of various suite versions is a waste and costs money.
 
 
 Tree
@@ -64,9 +88,12 @@ components/<name>_<platform>_<version>.txt
 	— is a component definition file that lists a set of packs needed by this component,
 	and the layout of files on the file system.
 
-products/<name>/versions_<platform>.txt
-	— lists component versions for the given product.
+suites/<name>/versions_<platform>.txt
+	— lists component and product versions for the given suite.
 	
+products/<name>/info.txt
+products/<name>/<platform>_<version>/news.html
+
 The following directories are not required by the update process, but are required to be present locally for the operation of Magic Ecabu. They don't need to be transferred to a public update site.
 
 catalog/<sha1>.txt
@@ -89,8 +116,8 @@ trees/<name>_<plaftorm>_<version>_packlist.txt
 The whole trees/ directory should never be transferred to other computers and can be safely deleted.
 
 
-Usage
------
+Commands reference
+==================
 
 A process of publishing a new version of a component looks like this:
 
@@ -145,10 +172,10 @@ Syntax:
 mae-promote-version
 -------------------
 
-Assigns the given component version to the given product.
+Assigns the given component version to the given suite.
 
 Syntax:
-	mae-promote-version <product> <platform> <versionspec> <role>
+	mae-promote-version <product> <platform> <versionspec> <release-type>
 	
 Example:
 	mae-promote-version ide ide-core/mac/1.1 stable
@@ -156,7 +183,7 @@ Example:
 	
 Notes:
 
-Platform names used by various components and platform names used by the product don't have to match, so the platform name is specified twice (as <platform> and inside <versionspec>).
+Platform names used by various components and platform names used by the suite don't have to match, so the platform name is specified twice (as <platform> and inside <versionspec>).
 
 
 mae-create-pack
@@ -170,7 +197,7 @@ Syntax:
 	
 Notes:
 
-If you want to make a pack out of a specific component, you should do a regular mae-create-tree, mae-pack-tree, mae-create-version sequence. For example, if several applications use Google Collections library, you should run the following commands (*before* you run mae-pack-tree on any component that includes files from Google Collections):
+If you want to make a pack out of a specific component, you should do a regular mae-create-tree, mae-pack-tree, mae-create-version sequence. For example, if several suites use Google Collections library, you should run the following commands (*before* you run mae-pack-tree on any component that includes files from Google Collections):
 
 	mae-create-tree google-collections/mac/1.0 ...path...
 	mae-pack-tree google-collections/mac/1.0

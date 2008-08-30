@@ -18,3 +18,77 @@ components/ruby/ownership.txt
 default owned files rule: every file which has been installed, and also files specifically mentioned
 files that were owned by the last version but are not owned by the new one are deleted
 
+So, now, the Java side of the updater. How to do it in a simple way?
+
+Use cases:
+– YourSway IDE (with many optional components)
+– Corchy (no optional components)
+– ProjectSync eclipse plugin
+– regular Eclipse updates
+
+When the product folder is not writable, might use alternate per-user folders if the product supports it.
+
+No automatic update checks for this release.
+
+Storage folders and states? Temporary storage is *always* per-user.
+
+Which packs to keep? The packs mentioned in the current and in the previous version (the one we might want to roll back to).
+
+Input: name and platform of the product, versionspec of each installed component.
+
+1) working mode, no pending updates
+
+2) checking for updates (download versions_mac.txt, interpret)
+
+3) working mode, outstanding update request (“what to do with version X.Y?”)
+
+4) working mode, downloading update
+
+5) working mode, downloading update, outstanding update request (“what to do with version X.Y?”)
+
+6) working mode, failed download notification
+
+7) working mode, failed download notification, downloading update (retrying)
+
+8) working mode, failed download notification, outstanding update request (“what to do with version X.Y?”)
+
+9) working mode, failed download notification, downloading update (retrying), outstanding update request (“what to do with version X.Y?”)
+
+10) installing update
+
+11) rolling back update
+
+12) cleaning up update
+
+13) working mode, failed installation notification
+
+Per-user:
+	last installation attemp: (never happened, in progress, failed, succeeded) at <time>
+	first scheduled check attemp: never | scheduled at <time>
+		— used to prevent “no successful checks for a while” warning right after scheduling
+		updates.
+	last successful check: never since scheduling | at <time>
+	last check attemp: (never happened, in progress, failed, succeeded) at <time>
+
+Failed installation notification:
+
+	“The previous installation attemp has failed. _Retry_”
+
+	last failed installation notification: never | at <time>
+	if “last installation attemp” is “failed” and “last failed installation notification” time < “last installation attemp” time
+		then give a warning
+
+Failed download notification:
+
+	(Auto-retry download 2 times, then +day, +2days, +week.)
+
+	“An attemp to download updates has failed two times. Will retry in one day. _Retry now_”
+	
+Product version:
+PV	1.3	ide	stable
+CV	1.3	ide	ide-core/mac/1.8.1
+		
+~/Library/Appplication Support/<product>/Updates/Products/ide/versions_mac.txt
+~/Library/Appplication Support/<product>/Updates/Components/ide-ruby_mac_0.8.txt
+~/Library/Appplication Support/<product>/Updates/Packs/sha1.zip
+~/Library/<product>/Components/ide-ruby_mac_0.8/
