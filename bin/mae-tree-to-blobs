@@ -1,0 +1,2 @@
+#! /bin/bash
+awk '/^LF\t/ { print "B\t", $2, "\t", $3 }'

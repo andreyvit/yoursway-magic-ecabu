@@ -1,0 +1,83 @@
+#! /bin/bash
+p="$(pwd)"
+cd "$(dirname "$0")/.."
+base_dir="$(pwd)"
+cd "$p"
+source "$base_dir/lib/mae-lib-general.sh" ||
+  { echo "fatal error: cannot load magic ecabu library"; exit 13; }
+
+USAGE="usage: $(basename "$0") <suite> <product> <platform> <version> <release-type>"
+
+force=false
+cont=true
+dryrun=true
+while $cont && test -n "$1"; do
+  case $1 in
+    -f)
+      dryrun=false
+      shift;;
+    -*)
+      echo "bad option '$1'"
+      exit 13;;
+    *)
+      cont=false;;
+  esac
+done
+
+test -z "$3" &&
+  die "not enought arguments\n$USAGE"
+suite="$1"
+prod="$2"
+platf="$3"
+ver="$4"
+reltype="$5"
+
+flatver="$(flatten_version "$ver")"
+
+# read comp complatf vernum < <(explode_version "$ver")
+
+productversions="$product_dir/$prod/component_versions_$platf.txt"
+test -f "$productversions" ||
+  die "$productversions not found, please run mae-promote-component before using $(basename "$0")."
+  
+versions="$suite_dir/$suite/versions_$platf.txt"
+mkdir -p "$(dirname "$versions")"
+
+comcomplist="$product_def_dir/$prod/components.txt"
+complist="$product_def_dir/$prod/components_$platf.txt"
+mkdir -p "$(dirname "$complist")"
+test -f "$complist" || test -f "$comcomplist" || {
+  echo "component list file $complist not found."
+  (
+    echo "# this is a sample component definition for platform"
+    echo "# C mycomponent platform"
+  ) >"$complist"
+  die "stub file created, please edit: $complist"
+}
+
+tmpfile="$(mktemp -t prodverdata)"
+{
+  echo -e "PV\t$prod\t$reltype\t$ver"
+  for component in $((
+    test -f "$comcomplist" && cat "$comcomplist"
+    cat "$complist"
+  ) | grep -v '^#' | awk '
+    BEGIN { FS="\t" }
+    { print $2 "/" $3 }
+  '); do
+    read compname compplatf < <(echo "$component" | sed -e 's/\// /g')
+    CVB_str="$(cat "$productversions" | awk -v "compname=$compname" -v "compplatf=$compplatf" -v "reltype=$reltype" '
+      BEGIN { FS="[\t/]"; OFS="\t" }
+      { if($2 == compname && $3 == compplatf && $5 == reltype) print "CVB", $2 "/" $3 "/" $4; }
+    ' | tail -1)"
+    test -z "$CVB_str" &&
+      die "cannot find any suitable version for component $component"
+    echo "$CVB_str"
+  done
+} >"$tmpfile"
+
+echo "product version definition:"
+echo "---------------------------"
+cat "$tmpfile"
+$dryrun && echo "--------- (draft) ---------"
+$dryrun || cat "$tmpfile" >>"$versions"

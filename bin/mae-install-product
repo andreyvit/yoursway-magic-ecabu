@@ -1,0 +1,67 @@
+#! /bin/bash
+p="$(pwd)"
+cd "$(dirname "$0")/.."
+base_dir="$(pwd)"
+cd "$p"
+source "$base_dir/lib/mae-lib-general.sh" ||
+  { echo "fatal error: cannot load magic ecabu library"; exit 13; }
+
+USAGE="usage: $(basename "$0") <folder> <suite> <product> <plaft> <reltype> <url>"
+
+test -z "$3" &&
+  die "not enough arguments\n$USAGE"
+
+dir="$1"
+suite="$2"
+prod="$3"
+platf="$4"
+reltype="$5"
+url="$6"
+
+updatedir="~/Library/Application Support/$suite/Updates"
+packsdir="$updatedir/Packs"
+componentsdir="$updatedir/Components"
+versions="$updatedir/versions.txt"
+mkdir -p "$packsdir"
+mkdir -p "$componentsdir"
+
+curl -o "$versions" "$url/suites/$suite/versions_$platf.txt"  2>/dev/null ||
+  die "cannot check for updates (error loading $url/suites/$suite/versions_$platf.txt)"
+  
+pversion="$(cat "$versions" | awk -F "\t" -v "product=$prod" -v "reltype=$reltype" '
+  /^PV\t/ { if($2 == product && $3 == reltype) print $4 }
+' | tail -1)"
+
+test -z "$pversion" &&
+  die "no suitable product versions found in the suite $suite"
+  
+echo "installing $prod v. $pversion"
+  
+for component in $(cat "$versions" | awk -F "\t" -v "product=$prod" -v "reltype=$reltype" -v "version=$pversion" '
+    BEGIN { sel = 0 }
+    /^PV\t/ { if($2 == product && $3 == reltype && $4 == version) sel = 1; else sel = 0 }
+    /^CVB\t/ { if(sel) print $2 }
+  '); do
+  
+  echo "installing $component"
+  flatcomp="$(flatten_version "$component")"
+  cverfilename="$flatcomp.txt"
+  cverfile="$componentsdir/$cverfilename"
+  curl -o "$cverfile" "$url/components/$cverfilename" 2>/dev/null ||
+    die "cannot load definition of component $component at $url/components/$cverfilename"
+  
+  for pack in $(cat "$cverfile" | awk -F "\t" '/^P\t/ { print $2 }'); do
+    packfile="$packsdir/$pack.zip"
+    test -f "$packfile" && {
+      echo "checking pack $pack..."
+      ! test "$pack" == "$(echo "$packfile" | $bin/mae-hash-files --plain)"
+    } && rm -f "$packfile"
+    if ! test -f "$packfile"; then
+      echo "downloading pack $pack..."
+      curl -o "$packfile" "$url/packs/$pack.zip" 2>/dev/null ||
+        die "error downloading $url/packs/$pack.zip"
+    fi
+  done
+  
+  # ...
+done
